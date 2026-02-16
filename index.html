@@ -677,11 +677,11 @@
                     <button class="button download-btn" onclick="downloadOriginal()">
                         Download Original Size
                     </button>
-                    <button class="button download-btn" onclick="downloadResized(320, 300)">
-                        Download 320x300
+                    <button class="button download-btn" onclick="downloadResized(320, 200, 'landscape')">
+                        Download Landscape (320x200)
                     </button>
-                    <button class="button download-btn" onclick="downloadResized(350, 350)">
-                        Download 350x350
+                    <button class="button download-btn" onclick="downloadResized(350, 350, 'square')">
+                        Download Square (350x350)
                     </button>
                 </div>
             `;
@@ -694,15 +694,15 @@
             showStatus('✓ Original image downloaded!', 'success');
         }
 
-        function downloadResized(width, height) {
+        function downloadResized(width, height, label) {
             if (!currentImageUrl) return;
 
-            showStatus(`Preparing ${width}x${height} image...`, 'success');
+            showStatus(`Preparing ${label} ${width}x${height} image...`, 'success');
 
             const img = new Image();
             img.onload = function() {
-                resizeAndDownload(img, width, height, `cover-image-${width}x${height}.png`);
-                showStatus(`✓ ${width}x${height} image downloaded!`, 'success');
+                resizeAndDownload(img, width, height, `cover-image-${label}.png`);
+                showStatus(`✓ ${label} image downloaded!`, 'success');
             };
             img.src = currentImageUrl;
         }
