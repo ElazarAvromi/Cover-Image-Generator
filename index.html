@@ -674,7 +674,7 @@
             previewArea.innerHTML = `
                 <img src="${imageUrl}" alt="Generated cover image" class="preview-image">
                 <button class="button download-btn" onclick="downloadImage()">
-                    Download Image
+                    Download All Sizes (3 images)
                 </button>
             `;
             previewArea.classList.add('has-image');
@@ -683,14 +683,74 @@
         function downloadImage() {
             if (!currentImageUrl) return;
 
+            showStatus('Preparing downloads...', 'success');
+
+            // Create an image element to get dimensions
+            const img = new Image();
+            img.onload = function() {
+                // Download original size
+                downloadSingleImage(currentImageUrl, 'cover-image-original.png');
+
+                // Create and download 320x300 version
+                resizeAndDownload(img, 320, 300, 'cover-image-320x300.png');
+
+                // Create and download 350x350 version
+                resizeAndDownload(img, 350, 350, 'cover-image-350x350.png');
+
+                showStatus('✓ All 3 images downloaded successfully!', 'success');
+            };
+            img.src = currentImageUrl;
+        }
+
+        function downloadSingleImage(dataUrl, filename) {
             const link = document.createElement('a');
-            link.href = currentImageUrl;
-            link.download = `cover-image-${Date.now()}.png`;
+            link.href = dataUrl;
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            showStatus('Image downloaded successfully!', 'success');
+        }
+
+        function resizeAndDownload(img, targetWidth, targetHeight, filename) {
+            // Create canvas for resizing
+            const canvas = document.createElement('canvas');
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            const ctx = canvas.getContext('2d');
+
+            // Calculate scaling to fill the target size while maintaining aspect ratio
+            const imgAspect = img.width / img.height;
+            const targetAspect = targetWidth / targetHeight;
+
+            let drawWidth, drawHeight, offsetX, offsetY;
+
+            if (imgAspect > targetAspect) {
+                // Image is wider - fit to height and crop width
+                drawHeight = targetHeight;
+                drawWidth = img.width * (targetHeight / img.height);
+                offsetX = (targetWidth - drawWidth) / 2;
+                offsetY = 0;
+            } else {
+                // Image is taller - fit to width and crop height
+                drawWidth = targetWidth;
+                drawHeight = img.height * (targetWidth / img.width);
+                offsetX = 0;
+                offsetY = (targetHeight - drawHeight) / 2;
+            }
+
+            // Fill background with white (in case of transparency)
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, targetWidth, targetHeight);
+
+            // Draw image centered and proportionally scaled
+            ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+            // Convert to data URL and download
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                downloadSingleImage(url, filename);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
         }
 
         function showStatus(message, type) {
