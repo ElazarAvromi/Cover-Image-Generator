@@ -673,31 +673,36 @@
             currentImageUrl = imageUrl;
             previewArea.innerHTML = `
                 <img src="${imageUrl}" alt="Generated cover image" class="preview-image">
-                <button class="button download-btn" onclick="downloadImage()">
-                    Download All Sizes (3 images)
-                </button>
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px; width: 100%;">
+                    <button class="button download-btn" onclick="downloadOriginal()">
+                        Download Original Size
+                    </button>
+                    <button class="button download-btn" onclick="downloadResized(320, 300)">
+                        Download 320x300
+                    </button>
+                    <button class="button download-btn" onclick="downloadResized(350, 350)">
+                        Download 350x350
+                    </button>
+                </div>
             `;
             previewArea.classList.add('has-image');
         }
 
-        function downloadImage() {
+        function downloadOriginal() {
+            if (!currentImageUrl) return;
+            downloadSingleImage(currentImageUrl, 'cover-image-original.png');
+            showStatus('✓ Original image downloaded!', 'success');
+        }
+
+        function downloadResized(width, height) {
             if (!currentImageUrl) return;
 
-            showStatus('Preparing downloads...', 'success');
+            showStatus(`Preparing ${width}x${height} image...`, 'success');
 
-            // Create an image element to get dimensions
             const img = new Image();
             img.onload = function() {
-                // Download original size
-                downloadSingleImage(currentImageUrl, 'cover-image-original.png');
-
-                // Create and download 320x300 version
-                resizeAndDownload(img, 320, 300, 'cover-image-320x300.png');
-
-                // Create and download 350x350 version
-                resizeAndDownload(img, 350, 350, 'cover-image-350x350.png');
-
-                showStatus('✓ All 3 images downloaded successfully!', 'success');
+                resizeAndDownload(img, width, height, `cover-image-${width}x${height}.png`);
+                showStatus(`✓ ${width}x${height} image downloaded!`, 'success');
             };
             img.src = currentImageUrl;
         }
